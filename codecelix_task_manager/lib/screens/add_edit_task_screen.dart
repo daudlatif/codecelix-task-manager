@@ -17,6 +17,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
   final descCtrl = TextEditingController();
   DateTime dueDate = DateTime.now();
   String priority = 'Low';
+  bool saving = false;
 
   @override
   void initState() {
@@ -29,13 +30,26 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
     }
   }
 
+  Color _priorityColor(String p) {
+    switch (p) {
+      case 'High':
+        return const Color(0xFFE5484D);
+      case 'Medium':
+        return const Color(0xFFF5A623);
+      default:
+        return const Color(0xFF4CAF82);
+    }
+  }
+
   void _save() async {
     if (titleCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Title is required')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Title is required'),
+        behavior: SnackBarBehavior.floating,
+      ));
       return;
     }
-
+    setState(() => saving = true);
     final taskProvider = context.read<TaskProvider>();
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -62,18 +76,25 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return Scaffold(
       appBar: AppBar(title: Text(widget.task == null ? 'Add Task' : 'Edit Task')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
           children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Title')),
-            TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
-            const SizedBox(height: 12),
-            ListTile(
-              title: Text('Due: ${dueDate.toLocal().toString().split(' ')[0]}'),
-              trailing: const Icon(Icons.calendar_today),
+            TextField(
+              controller: titleCtrl,
+              decoration: const InputDecoration(labelText: 'Title', prefixIcon: Icon(Icons.title_rounded)),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Description', prefixIcon: Icon(Icons.notes_rounded)),
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context, initialDate: dueDate,
@@ -82,16 +103,56 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                 );
                 if (picked != null) setState(() => dueDate = picked);
               },
-            ),
-            DropdownButton<String>(
-              value: priority,
-              items: ['Low', 'Medium', 'High']
-                  .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                  .toList(),
-              onChanged: (val) => setState(() => priority = val!),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_outlined, size: 20),
+                    const SizedBox(width: 12),
+                    Text('Due: ${dueDate.toLocal().toString().split(' ')[0]}',
+                        style: const TextStyle(fontSize: 15)),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _save, child: const Text('Save Task')),
+            const Text('Priority', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            const SizedBox(height: 10),
+            Row(
+              children: ['Low', 'Medium', 'High'].map((p) {
+                final selected = priority == p;
+                final color = _priorityColor(p);
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => priority = p),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: selected ? color.withOpacity(0.12) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: selected ? color : Colors.grey.shade200, width: 1.5),
+                      ),
+                      child: Text(p,
+                          style: TextStyle(
+                              color: selected ? color : Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13)),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: saving ? null : _save,
+              style: ElevatedButton.styleFrom(backgroundColor: primary),
+              child: saving
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : Text(widget.task == null ? 'Save Task' : 'Update Task'),
+            ),
           ],
         ),
       ),
