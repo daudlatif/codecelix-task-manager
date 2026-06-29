@@ -1,0 +1,40 @@
+# Codecelix Task Manager
+
+A Flutter task management app with Firebase Authentication, Firestore database, and local push notifications for due-date reminders.
+
+## Features
+- Email/Password authentication (Register/Login/Logout)
+- Add, edit, delete tasks (Title, Description, Due Date, Priority)
+- Mark tasks as complete
+- Filter tasks by All / Pending / Completed
+- Per-user task isolation via Firestore security rules
+- Local push notifications for tasks nearing due date
+
+## Tech Stack
+- Flutter (latest stable)
+- Firebase Authentication
+- Cloud Firestore
+- Provider (state management)
+- flutter_local_notifications
+
+## Setup Instructions
+1. Clone the repo
+2. Run `flutter pub get`
+3. Add your own `firebase_options.dart` via `flutterfire configure`
+4. Run `flutter run`
+
+## Firestore Security Rules
+\`\`\`
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /tasks/{taskId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
+\`\`\`
+
+## Author
+Muhammad Daud Latif

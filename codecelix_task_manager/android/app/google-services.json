@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "896887756807",
+    "project_id": "codecelixtaskmanager-f8557",
+    "storage_bucket": "codecelixtaskmanager-f8557.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:896887756807:android:4d975fa6b9c4370b9572a2",
+        "android_client_info": {
+          "package_name": "com.example.codecelix_task_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAWV_KHsXec3kzPAlnz52SxSMHWAIGA8k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
